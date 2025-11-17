@@ -1,0 +1,179 @@
+import React, { useState } from 'react';
+
+export default function SnusJawApp() {
+  const [tab, setTab] = useState('snus');
+
+  // Shared
+  const [age, setAge] = useState('');
+  const [weight, setWeight] = useState('');
+  const [height, setHeight] = useState('');
+
+  // Snus
+  const [snusBrand, setSnusBrand] = useState('');
+  const [snusStrength, setSnusStrength] = useState(''); // mg per pouch
+  const [snusActive, setSnusActive] = useState('Nikotyna');
+  const [snusFrequency, setSnusFrequency] = useState(''); // times per week
+  const [snusCountOnJaw, setSnusCountOnJaw] = useState(1); // per day
+  const [snusHealthInfo, setSnusHealthInfo] = useState('Wprowadź dane i kliknij „Oceń zdrowie”.');
+
+  // Energy drinks
+  const [drinkBrand, setDrinkBrand] = useState('');
+  const [drinkAmount, setDrinkAmount] = useState('250'); // ml per serving
+  const [drinkStrength, setDrinkStrength] = useState(''); // mg / 100ml
+  const [drinkFrequency, setDrinkFrequency] = useState(''); // times per week
+  const [energyDrinkCount, setEnergyDrinkCount] = useState(1); // how many servings
+  const [drinkHealthInfo, setDrinkHealthInfo] = useState('Wprowadź dane i kliknij „Oceń zdrowie”.');
+
+  // Evaluate snus risk
+  function evaluateSnus() {
+    if (!age || !weight || !snusStrength || !snusFrequency) {
+      setSnusHealthInfo('⚠️ Uzupełnij wszystkie dane, aby obliczyć ryzyko.');
+      return;
+    }
+
+    const mgPerDay = Number(snusStrength) * Number(snusCountOnJaw);
+    // crude heuristic
+    if (isNaN(mgPerDay)) {
+      setSnusHealthInfo('⚠️ Nieprawidłowe wartości.');
+      return;
+    }
+
+    if (mgPerDay < 10) {
+      setSnusHealthInfo('🟢 Niskie ryzyko — nadal obserwuj jamę ustną.');
+    } else if (mgPerDay < 20) {
+      setSnusHealthInfo('🟡 Umiarkowane ryzyko — rotuj miejsce i ogranicz czas noszenia.');
+    } else {
+      setSnusHealthInfo('🔴 Wysokie ryzyko — ogranicz użycie i skonsultuj się z dentystą.');
+    }
+  }
+
+  // Evaluate energy drink risk
+  function evaluateDrink() {
+    if (!age || !weight || !drinkStrength || !drinkAmount || !energyDrinkCount) {
+      setDrinkHealthInfo('⚠️ Uzupełnij wszystkie dane, aby obliczyć ryzyko.');
+      return;
+    }
+
+    const perServing = (Number(drinkAmount) / 100) * Number(drinkStrength); // mg per serving
+    if (isNaN(perServing)) {
+      setDrinkHealthInfo('⚠️ Nieprawidłowe wartości kofeiny.');
+      return;
+    }
+    const total = perServing * Number(energyDrinkCount);
+
+    if (total < 150) {
+      setDrinkHealthInfo(`🟢 Niskie ryzyko — łączna kofeina: ${total.toFixed(0)} mg.`);
+    } else if (total < 300) {
+      setDrinkHealthInfo(`🟡 Umiarkowane ryzyko — łączna kofeina: ${total.toFixed(0)} mg.`);
+    } else {
+      setDrinkHealthInfo(`🔴 Wysokie ryzyko — łączna kofeina: ${total.toFixed(0)} mg. Zmniejsz spożycie!`);
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-5xl mx-auto">
+        <div className="w-full bg-blue-700 text-white text-center py-4 rounded-xl mb-6 text-2xl font-bold shadow">4YourHealth</div>
+
+        <div className="flex gap-4 mb-4">
+          <button onClick={() => setTab('snus')} className={`px-4 py-2 rounded ${tab === 'snus' ? 'bg-blue-600 text-white' : 'bg-white border'}`}>Snus</button>
+          <button onClick={() => setTab('napoje')} className={`px-4 py-2 rounded flex items-center gap-2 ${tab === 'napoje' ? 'bg-blue-600 text-white' : 'bg-white border'}`}><span>⚡</span> Napoje energetyczne</button>
+        </div>
+
+        {/* SNUS TAB */}
+        {tab === 'snus' && (
+          <div className="bg-white p-6 rounded-2xl shadow">
+            <h2 className="text-xl font-semibold mb-3">Snus – dane użytkownika</h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <label>Wiek:
+                <input type="number" value={age} onChange={e => setAge(e.target.value)} className="p-2 border rounded w-full mt-1" />
+              </label>
+
+              <label>Waga (kg):
+                <input type="number" value={weight} onChange={e => setWeight(e.target.value)} className="p-2 border rounded w-full mt-1" />
+              </label>
+
+              <label>Marka snusów:
+                <input type="text" value={snusBrand} onChange={e => setSnusBrand(e.target.value)} className="p-2 border rounded w-full mt-1" />
+              </label>
+
+              <label>Moc na saszetkę (mg):
+                <input type="number" value={snusStrength} onChange={e => setSnusStrength(e.target.value)} className="p-2 border rounded w-full mt-1" />
+              </label>
+
+              <label>Substancja aktywna:
+                <select value={snusActive} onChange={e => setSnusActive(e.target.value)} className="p-2 border rounded w-full mt-1">
+                  <option>Nikotyna</option>
+                  <option>Kofeina</option>
+                </select>
+              </label>
+
+              <label>Częstotliwość (ile razy w tygodniu):
+                <input type="number" value={snusFrequency} onChange={e => setSnusFrequency(e.target.value)} className="p-2 border rounded w-full mt-1" />
+              </label>
+
+              </div>
+
+            <h2 className="text-xl font-semibold mb-3">Ocena zdrowia:</h2>
+            <button className="px-4 py-2 bg-blue-600 text-white rounded mb-4" onClick={evaluateSnus}>Oceń zdrowie</button>
+
+            <div className="mt-4 p-4 bg-gray-100 border-l-4 border-gray-400 rounded text-gray-800">
+              {snusHealthInfo}
+            </div>
+          </div>
+        )}
+
+        {/* ENERGY DRINKS TAB */}
+        {tab === 'napoje' && (
+          <div className="bg-white p-6 rounded-2xl shadow">
+            <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">⚡ Napoje energetyczne</h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <label>Wiek:
+                <input type="number" value={age} onChange={e => setAge(e.target.value)} className="p-2 border rounded w-full mt-1" />
+              </label>
+
+              <label>Waga (kg):
+                <input type="number" value={weight} onChange={e => setWeight(e.target.value)} className="p-2 border rounded w-full mt-1" />
+              </label>
+
+              <label>Marka napoju:
+                <input type="text" value={drinkBrand} onChange={e => setDrinkBrand(e.target.value)} className="p-2 border rounded w-full mt-1" />
+              </label>
+
+              <label>Ilość wypitego napoju (na raz):
+                <select value={drinkAmount} onChange={e => setDrinkAmount(e.target.value)} className="p-2 border rounded w-full mt-1">
+                  <option value="250">250 ml</option>
+                  <option value="330">330 ml</option>
+                  <option value="500">0.5 L</option>
+                  <option value="750">0.75 L</option>
+                  <option value="1000">1 L</option>
+                </select>
+              </label>
+
+              <label>Moc napoju (mg kofeiny / 100ml):
+                <input type="number" value={drinkStrength} onChange={e => setDrinkStrength(e.target.value)} className="p-2 border rounded w-full mt-1" />
+              </label>
+
+              <label>Ile porcji (ile razy wypiłeś tę ilość):
+                <input type="number" value={energyDrinkCount} onChange={e => setEnergyDrinkCount(Number(e.target.value))} className="p-2 border rounded w-full mt-1" />
+              </label>
+
+              <label>Częstotliwość (ile razy w tygodniu):
+                <input type="number" value={drinkFrequency} onChange={e => setDrinkFrequency(e.target.value)} className="p-2 border rounded w-full mt-1" />
+              </label>
+            </div>
+
+            <h2 className="text-xl font-semibold mb-3">Ocena zdrowia:</h2>
+            <button className="px-4 py-2 bg-blue-600 text-white rounded mb-4" onClick={evaluateDrink}>Oceń zdrowie</button>
+
+            <div className="mt-4 p-4 bg-gray-100 border-l-4 border-gray-400 rounded text-gray-800">
+              {drinkHealthInfo}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

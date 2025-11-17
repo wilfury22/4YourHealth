@@ -1,0 +1,9 @@
+import SnusJawApp from './SnusJawApp';
+
+function App() {
+  return (
+    <div>
+      <SnusJawApp />
+    </div>
+  );
+}
